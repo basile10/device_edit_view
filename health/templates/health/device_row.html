@@ -1,0 +1,39 @@
+<tr id="device-{{ device.id }}">
+  {% if edit %}
+    <td colspan="6">
+      <form method="post" hx-post="/health/{{ platform }}/edit-inline/{{ device.id }}/" hx-target="#device-{{ device.id }}" hx-swap="outerHTML" class="d-flex align-items-center gap-2 w-100">
+        {% csrf_token %}
+        <input type="text" class="form-control form-control-sm flex-grow-1" name="ip_address" value="{{ device.ip_address }}" placeholder="IP Address">
+        <input type="text" class="form-control form-control-sm flex-grow-1" name="mac_address" value="{{ device.mac_address }}" placeholder="MAC Address">
+        <input type="text" class="form-control form-control-sm flex-grow-1" name="hostname" value="{{ device.hostname }}" placeholder="Hostname">
+        <input type="text" class="form-control form-control-sm flex-grow-1" name="location" value="{{ device.location }}" placeholder="Location">
+        {% if device.status %}
+          {% if device.status.is_online %}
+            <span class="badge bg-success">Online</span>
+          {% else %}
+            <span class="badge bg-secondary">Offline</span>
+          {% endif %}
+        {% else %}-{% endif %}
+        <button type="submit" class="btn btn-sm btn-success ms-2">Save</button>
+        <button type="button" class="btn btn-sm btn-secondary ms-1" 
+          hx-get="/health/{{ platform }}/row/{{ device.id }}/" 
+          hx-target="#device-{{ device.id }}" 
+          hx-swap="outerHTML">Cancel</button>
+      </form>
+    </td>
+  {% else %}
+    <td>{{ device.ip_address }}</td>
+    <td>{{ device.mac_address }}</td>
+    <td>{{ device.hostname }}</td>
+    <td>{{ device.location }}</td>
+    <td>{% if device.status %}{% if device.status.is_online %}<span class="badge bg-success">Online</span>{% else %}<span class="badge bg-secondary">Offline</span>{% endif %}{% else %}-{% endif %}</td>
+    <td>
+      <button class="btn btn-sm btn-primary" 
+        hx-get="/health/{{ platform }}/edit-inline/{{ device.id }}/" 
+        hx-target="#device-{{ device.id }}" 
+        hx-swap="outerHTML">
+        Edit
+      </button>
+    </td>
+  {% endif %}
+</tr>
