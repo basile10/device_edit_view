@@ -3,6 +3,7 @@ from django.http import HttpResponseForbidden
 from django.views import View
 from django.contrib.auth.decorators import login_required
 from django.utils.decorators import method_decorator
+from django.db.models import Count, Q
 from .models import WindowsDevice, AndroidDevice, UserRole
 
  # Helper function to get device by platform
@@ -42,12 +43,45 @@ class DeviceInlineEditView(SuperAdminRequiredMixin, View):
             device.hostname = request.POST.get('hostname', device.hostname)
             device.location = request.POST.get('location', device.location)
             device.save()
-            # Do NOT pass 'edit' so the row renders in display mode
+# Do NOT pass 'edit' so the row renders in display mode
             return render(request, 'health/device_row.html', {'device': device, 'platform': platform, 'edit': False})
         except HttpResponseForbidden as e:
             return e
 
+
 @method_decorator(login_required, name='dispatch')
+class DashboardView(SuperAdminRequiredMixin, View):
+    def get(self, request):
+        # Initial load without stats - they'll be loaded via HTMX
+        return render(request, 'health/dashboard.html', {'platforms': {}})
+
+@method_decorator(login_required, name='dispatch')
+class DashboardStatsView(SuperAdminRequiredMixin, View):
+    def get(self, request):
+        platforms = {}
+        
+        # Windows stats
+        windows_stats = WindowsDevice.objects.aggregate(
+            total=Count('id'),
+            online=Count('status', filter=Q(status__is_online=True)),
+            offline=Count('status', filter=Q(status__is_online=False) | Q(status__isnull=True))
+        )
+        platforms['windows'] = windows_stats
+        
+        # Android stats
+        android_stats = AndroidDevice.objects.aggregate(
+            total=Count('id'),
+            online=Count('status', filter=Q(status__is_online=True)),
+            offline=Count('status', filter=Q(status__is_online=False) | Q(status__isnull=True))
+        )
+        platforms['android'] = android_stats
+        
+        # If it's an HTMX request, return only the stats partial
+        if request.headers.get('HX-Request'):
+            return render(request, 'health/partials/dashboard_stats.html', {'platforms': platforms})
+        
+        # Otherwise return the full dashboard
+        return render(request, 'health/dashboard.html', {'platforms': platforms})
 class DeviceRowView(SuperAdminRequiredMixin, View):
     def get(self, request, platform, pk):
         try:

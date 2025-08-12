@@ -1,0 +1,34 @@
+{% extends 'health/base.html' %}
+{% load static %}
+
+{% block content %}
+<div class="container py-4">
+    <h2 class="mb-4">Device Dashboard</h2>
+    
+    <!-- Loading Spinner -->
+    <div id="dashboard-spinner" class="text-center py-5" style="display: none;">
+        <div class="spinner-border text-primary" role="status">
+            <span class="visually-hidden">Loading...</span>
+        </div>
+    </div>
+
+    <!-- Dashboard Content -->
+    <div id="dashboard-content"
+         hx-get="{% url 'health:dashboard_stats' %}"
+         hx-trigger="load"
+         hx-indicator="#dashboard-spinner">
+        <div class="row">
+            {% for platform_name, stats in platforms.items %}
+                {% include 'health/partials/platform_card.html' %}
+            {% endfor %}
+        </div>
+    </div>
+
+    <!-- Auto refresh every 30 seconds -->
+    <div hx-get="{% url 'health:dashboard_stats' %}"
+         hx-trigger="every 30s"
+         hx-target="#dashboard-content"
+         hx-indicator="#dashboard-spinner">
+    </div>
+</div>
+{% endblock %}

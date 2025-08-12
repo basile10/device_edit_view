@@ -1,0 +1,6 @@
+{% load static %}
+<div class="row">
+    {% for platform_name, stats in platforms.items %}
+        {% include 'health/partials/platform_card.html' %}
+    {% endfor %}
+</div>

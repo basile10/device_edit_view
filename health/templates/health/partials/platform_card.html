@@ -1,0 +1,33 @@
+{% load static %}
+<div class="col-md-6 mb-4">
+    <div class="card h-100">
+        <div class="card-header bg-primary text-white text-capitalize">
+            {{ platform_name }}
+        </div>
+        <div class="card-body">
+            <div class="row g-3">
+                <div class="col-md-4">
+                    <div class="text-center">
+                        <h3 class="mb-0">{{ stats.total|default:0 }}</h3>
+                        <small class="text-muted">Total Devices</small>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="text-center text-success">
+                        <h3 class="mb-0">{{ stats.online|default:0 }}</h3>
+                        <small>Online</small>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="text-center text-danger">
+                        <h3 class="mb-0">{{ stats.offline|default:0 }}</h3>
+                        <small>Offline</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="card-footer">
+            <a href="{% url 'health:device_list' platform_name %}" class="btn btn-sm btn-outline-primary">View Devices</a>
+        </div>
+    </div>
+</div>
